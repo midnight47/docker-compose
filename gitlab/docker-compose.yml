@@ -1,0 +1,36 @@
+version: '3.7'
+services:
+  web:
+    image: 'gitlab/gitlab-ce:latest'
+    restart: always
+    hostname: '192.168.1.170'
+    container_name: gitlab-ce
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://192.168.1.170'
+        gitlab_rails['gitlab_shell_ssh_port'] = 8822
+    ports:
+      - '8080:80'
+      - '8443:443'
+      - '8822:22'
+    volumes:
+      - '/root/gitlab/config:/etc/gitlab'
+      - '/root/gitlab/logs:/var/log/gitlab'
+      - '/root/gitlab/data:/var/opt/gitlab'
+    networks:
+      - gitlab
+  gitlab-runner:
+    image: gitlab/gitlab-runner:alpine
+    container_name: gitlab-runner
+    restart: always
+    depends_on:
+      - web
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - '/root/gitlab/gitlab-runner:/etc/gitlab-runner'
+    networks:
+      - gitlab
+
+networks:
+  gitlab:
+    name: gitlab-network
