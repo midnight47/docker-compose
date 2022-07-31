@@ -14,6 +14,7 @@ external_url - по этому адресу будет доступен гит�
 docker-compose up -d
 ```
 
+чтобы зайти используем пользователя root и пароль ниже:
 ```
 docker exec -it gitlab-ce grep 'Password:' /etc/gitlab/initial_root_password
 ```
@@ -22,5 +23,58 @@ docker exec -it gitlab-ce grep 'Password:' /etc/gitlab/initial_root_password
 ```
 https://sidmid.ru/gitlab-in-docker-compose/
 ```
+
+регаем раннер после чего правим конфиг:
+gitlab/gitlab/gitlab-runner/config.toml
+
+```
+concurrent = 1
+check_interval = 0
+
+[session_server]
+  session_timeout = 1800
+
+[[runners]]
+  name = "docker"
+  url = "http://gitlab.local"
+  token = "KgF9Prs4K8dz5jhTs4LS"
+  executor = "docker"
+  clone_url = "http://gitlab.local"
+  [runners.custom_build_dir]
+  [runners.cache]
+    [runners.cache.s3]
+    [runners.cache.gcs]
+    [runners.cache.azure]
+  [runners.docker]
+    tls_verify = false
+    image = "docker:20.10.16"
+    privileged = true
+    disable_entrypoint_overwrite = false
+    oom_kill_disable = false
+    disable_cache = false
+    volumes = ["/cache"]
+    shm_size = 0
+    network_mode = "gitlab-network"
+
+```
+а именно добавляем 
+network_mode = "gitlab-network"
+и 
+privileged = true
+
+
+не забываем добавить в .gitlab-ci.yaml в variable
+
+```
+variables:
+  FF_GITLAB_REGISTRY_HELPER_IMAGE: 1
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+  DOCKER_BUILDKIT: 1
+  COMPOSE_DOCKER_CLI_BUILD: 1
+```
+
+
 
 

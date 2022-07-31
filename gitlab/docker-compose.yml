@@ -3,31 +3,54 @@ services:
   web:
     image: 'gitlab/gitlab-ce:latest'
     restart: always
-    hostname: '192.168.1.170'
+    hostname: 'gitlab.local'
     container_name: gitlab-ce
     environment:
       GITLAB_OMNIBUS_CONFIG: |
-        external_url 'http://192.168.1.170'
+        external_url 'http://gitlab.local'
         gitlab_rails['gitlab_shell_ssh_port'] = 8822
+        gitlab_rails['registry_port'] = 5000
+        prometheus_monitoring['enable'] = false
     ports:
-      - '8080:80'
-      - '8443:443'
+      - '80:80'
+      - '443:443'
       - '8822:22'
+      - '5000:5000'
+      - '2375:2375'
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 6000M
+        reservations:
+          cpus: '4.0'
+          memory: 5000M        
     volumes:
-      - '/root/gitlab/config:/etc/gitlab'
-      - '/root/gitlab/logs:/var/log/gitlab'
-      - '/root/gitlab/data:/var/opt/gitlab'
+      - './gitlab/gitlab/config:/etc/gitlab'
+      - './gitlab/gitlab/logs:/var/log/gitlab'
+      - './gitlab/gitlab/data:/var/opt/gitlab'
+      - '/etc/hosts:/etc/hosts:ro'
     networks:
       - gitlab
+
   gitlab-runner:
     image: gitlab/gitlab-runner:alpine
     container_name: gitlab-runner
     restart: always
     depends_on:
       - web
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 200M
+        reservations:
+          cpus: '1.0'
+          memory: 200M
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - '/root/gitlab/gitlab-runner:/etc/gitlab-runner'
+      - './gitlab/gitlab/gitlab-runner:/etc/gitlab-runner'
+      - '/etc/hosts:/etc/hosts:ro'
     networks:
       - gitlab
 
