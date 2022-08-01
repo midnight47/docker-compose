@@ -14,6 +14,7 @@ services:
         gitlab_rails['registry_port'] = "5005"
         gitlab_rails['registry_path'] = "/var/opt/gitlab/gitlab-rails/shared/registry"
         gitlab_rails['registry_api_url'] = "http://localhost:5000"
+        gitlab_rails['gitlab_shell_ssh_port'] = 8822
         registry['enable'] = true
         registry['token_realm'] = "http://gitlab.local:80"
         registry['registry_http_addr'] = "localhost:5000"
