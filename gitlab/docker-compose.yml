@@ -6,15 +6,22 @@ services:
     hostname: 'gitlab.local'
     container_name: gitlab-ce
     environment:
+      DOCKER_OPTS: "--insecure-registry registry.gitlab.local:5005"
       GITLAB_OMNIBUS_CONFIG: |
-        external_url 'http://gitlab.local'
-        gitlab_rails['gitlab_shell_ssh_port'] = 8822
-        gitlab_rails['registry_port'] = 5000
-        prometheus_monitoring['enable'] = false
+        registry_external_url 'http://registry.gitlab.local:5005'
+        gitlab_rails['registry_enabled'] = true
+        gitlab_rails['registry_host'] = "registry.gitlab.local"
+        gitlab_rails['registry_port'] = "5005"
+        gitlab_rails['registry_path'] = "/var/opt/gitlab/gitlab-rails/shared/registry"
+        gitlab_rails['registry_api_url'] = "http://localhost:5000"
+        registry['enable'] = true
+        registry['token_realm'] = "http://gitlab.local:80"
+        registry['registry_http_addr'] = "localhost:5000"
     ports:
       - '80:80'
       - '443:443'
       - '8822:22'
+      - '5005:5005'
       - '5000:5000'
       - '2375:2375'
     deploy:
@@ -24,7 +31,7 @@ services:
           memory: 6000M
         reservations:
           cpus: '4.0'
-          memory: 5000M        
+          memory: 5000M
     volumes:
       - './gitlab/gitlab/config:/etc/gitlab'
       - './gitlab/gitlab/logs:/var/log/gitlab'
@@ -37,6 +44,8 @@ services:
     image: gitlab/gitlab-runner:alpine
     container_name: gitlab-runner
     restart: always
+    environment:
+      - DOCKER_OPTS="--insecure-registry registry.gitlab.local:5005"
     depends_on:
       - web
     deploy:

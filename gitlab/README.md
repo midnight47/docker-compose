@@ -67,12 +67,23 @@ privileged = true
 
 ```
 variables:
+  # By default, the helper image is pulled from Docker Hub. Use gitlab docker regestry instead of dockerhub
   FF_GITLAB_REGISTRY_HELPER_IMAGE: 1
   DOCKER_HOST: tcp://docker:2375
   DOCKER_DRIVER: overlay2
   DOCKER_TLS_CERTDIR: ""
   DOCKER_BUILDKIT: 1
   COMPOSE_DOCKER_CLI_BUILD: 1
+  DOCKER_CONTAINER_REGISTRY: registry.gitlab.local:5005
+  DOCKER_REGISTRY: $DOCKER_CONTAINER_REGISTRY/test/backend
+```
+
+а в gitlab-ci.yaml для service добавляем:
+```
+  services:
+   - name: docker:dind
+     alias: docker
+     entrypoint: ["dockerd-entrypoint.sh", "--tls=false", "--insecure-registry=registry.gitlab.local:5005"]
 ```
 
 
