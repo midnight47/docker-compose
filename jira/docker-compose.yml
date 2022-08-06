@@ -66,7 +66,7 @@ services:
     networks:
       - jiranet
     volumes:
-      - ./volumes/jira_home_update:/var/atlassian/jira:rw
+      - ./volumes/jira_home_update:/var/atlassian/application-data/jira:rw
       - ./crack:/crack
     expose:
       - 8081
